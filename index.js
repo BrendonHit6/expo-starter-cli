@@ -5,16 +5,7 @@ const pc = require('picocolors');
 const { collectAnswers } = require('./src/prompts');
 const { resolveProjectPath, createProject, runInstall } = require('./src/project');
 const { removeClaudeConfig } = require('./src/claude');
-
-const ROUTING_LABEL = {
-  'expo-router': 'Expo Router      (file-based, app/)',
-  'react-navigation': 'React Navigation (stack / tabs / drawer)',
-};
-
-const STORE_LABEL = {
-  redux: 'Redux Toolkit',
-  zustand: 'Zustand',
-};
+const { ROUTING_LABEL, STORE_LABEL } = require('./src/constants');
 
 async function main() {
   console.log();

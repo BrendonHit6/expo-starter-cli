@@ -1,4 +1,5 @@
 const { text, select, confirm, cancel, isCancel } = require('@clack/prompts');
+const { ROUTING, STORE } = require('./constants');
 
 function handleCancel(value) {
   if (isCancel(value)) {
@@ -26,12 +27,12 @@ async function askRouting() {
     message: 'Тип роутінгу:',
     options: [
       {
-        value: 'expo-router',
+        value: ROUTING.EXPO_ROUTER,
         label: 'Expo Router',
         hint: 'file-based routing — папка app/, _layout.tsx (рекомендовано)',
       },
       {
-        value: 'react-navigation',
+        value: ROUTING.REACT_NAVIGATION,
         label: 'React Navigation',
         hint: 'ручна навігація — stack, bottom tabs, drawer',
       },
@@ -46,12 +47,12 @@ async function askStore() {
     message: 'Менеджер стану:',
     options: [
       {
-        value: 'redux',
+        value: STORE.REDUX,
         label: 'Redux Toolkit',
         hint: 'battle-tested, DevTools, три слайси (app, user, toast)',
       },
       {
-        value: 'zustand',
+        value: STORE.ZUSTAND,
         label: 'Zustand',
         hint: 'мінімалістичний, менше boilerplate, три стори',
       },

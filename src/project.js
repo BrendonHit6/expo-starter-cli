@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
+const { ROUTING } = require('./constants');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 
@@ -10,8 +11,13 @@ function resolveProjectPath(pathInput, projectName) {
   return path.join(path.resolve(pathInput), projectName);
 }
 
+const ROUTING_TO_TEMPLATE_KEY = {
+  [ROUTING.EXPO_ROUTER]: 'file-base-routing',
+  [ROUTING.REACT_NAVIGATION]: 'react-navigation',
+};
+
 function resolveTemplateName(routing, store) {
-  const routingKey = routing === 'expo-router' ? 'file-base-routing' : 'react-navigation';
+  const routingKey = ROUTING_TO_TEMPLATE_KEY[routing];
   return `expo-${routingKey}-${store}`;
 }
 
