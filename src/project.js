@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
-const { ROUTING } = require('./constants');
+const { ROUTING, CLAUDE_FILES, SKILLS } = require('./constants');
 
 const TEMPLATES_DIR = path.join(__dirname, '..', 'templates');
 
@@ -16,9 +16,9 @@ const ROUTING_TO_TEMPLATE_KEY = {
   [ROUTING.REACT_NAVIGATION]: 'react-navigation',
 };
 
-function resolveTemplateName(routing, store) {
+function resolveTemplateName(routing, store, styling) {
   const routingKey = ROUTING_TO_TEMPLATE_KEY[routing];
-  return `expo-${routingKey}-${store}`;
+  return `expo-${routingKey}-${store}-${styling}`;
 }
 
 function copyTemplate(templateDir, destDir) {
@@ -36,6 +36,16 @@ function updatePackageJson(destDir, projectName) {
   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
 }
 
+function copySkills(destDir) {
+  for (const skill of Object.values(SKILLS)) {
+    const src = path.join(TEMPLATES_DIR, skill.source);
+    const dest = path.join(destDir, CLAUDE_FILES.SKILLS_DIR, skill.target);
+    if (!fs.existsSync(src)) throw new Error(`Skill не знайдено: ${src}`);
+    fs.mkdirSync(dest, { recursive: true });
+    fs.cpSync(src, dest, { recursive: true });
+  }
+}
+
 function runInstall(destDir) {
   return new Promise((resolve, reject) => {
     const proc = spawn('npm', ['install'], { cwd: destDir, stdio: 'inherit' });
@@ -47,13 +57,15 @@ function runInstall(destDir) {
   });
 }
 
-async function createProject({ routing, store, projectName, projectPath }) {
+async function createProject({ routing, store, styling, projectName, projectPath, addClaude }) {
   const destDir = resolveProjectPath(projectPath, projectName);
-  const templateName = resolveTemplateName(routing, store);
+  const templateName = resolveTemplateName(routing, store, styling);
   const templateDir = path.join(TEMPLATES_DIR, templateName);
 
   copyTemplate(templateDir, destDir);
   updatePackageJson(destDir, projectName);
+
+  if (addClaude) copySkills(destDir);
 
   return destDir;
 }

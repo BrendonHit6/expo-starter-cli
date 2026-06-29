@@ -1,0 +1,49 @@
+{
+  "enabledPlugins": {
+    "expo@claude-plugins-official": true
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *.ts|*.tsx) command -v npx >/dev/null && npx --no-install eslint --fix \"$f\" 2>&1 | tail -10 || true ;; esac"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // empty'); case \"$cmd\" in *\"npm install\"*|*\"yarn add\"*|*\"pnpm add\"*) echo 'Verify package.json: pin versions, check bundle-size impact, ensure no duplicate state/style libs' ;; esac"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r '.tool_input.file_path // empty'); case \"$f\" in *.tsx) echo 'Reminder: no inline styles, business logic in hook, ScreenWrapper as root, single-slice store selectors' ;; esac"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "terminal-notifier -message 'Claude finished the task' -title 'Claude Code' 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}

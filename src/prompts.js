@@ -1,5 +1,5 @@
 const { text, select, confirm, cancel, isCancel } = require('@clack/prompts');
-const { ROUTING, STORE } = require('./constants');
+const { ROUTING, STORE, STYLING } = require('./constants');
 
 function handleCancel(value) {
   if (isCancel(value)) {
@@ -62,6 +62,26 @@ async function askStore() {
   return value;
 }
 
+async function askStyling() {
+  const value = await select({
+    message: 'Стилізація:',
+    options: [
+      {
+        value: STYLING.STYLESHEET,
+        label: 'StyleSheet',
+        hint: 'нативний React Native, без додаткових залежностей',
+      },
+      {
+        value: STYLING.TAILWIND,
+        label: 'Tailwind (NativeWind v4)',
+        hint: 'utility-first класи через className',
+      },
+    ],
+  });
+  handleCancel(value);
+  return value;
+}
+
 async function askAddClaude() {
   const value = await confirm({
     message: 'Додати налаштування Claude (CLAUDE.md + .claude/)?',
@@ -86,10 +106,11 @@ async function collectAnswers() {
   const projectName = await askProjectName();
   const routing = await askRouting();
   const store = await askStore();
+  const styling = await askStyling();
   const addClaude = await askAddClaude();
   const projectPath = await askProjectPath();
 
-  return { projectName, routing, store, addClaude, projectPath };
+  return { projectName, routing, store, styling, addClaude, projectPath };
 }
 
 module.exports = { collectAnswers };

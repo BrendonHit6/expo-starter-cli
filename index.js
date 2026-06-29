@@ -5,14 +5,14 @@ const pc = require('picocolors');
 const { collectAnswers } = require('./src/prompts');
 const { resolveProjectPath, createProject, runInstall } = require('./src/project');
 const { removeClaudeConfig } = require('./src/claude');
-const { ROUTING_LABEL, STORE_LABEL } = require('./src/constants');
+const { ROUTING_LABEL, STORE_LABEL, STYLING_LABEL } = require('./src/constants');
 
 async function main() {
   console.log();
   intro(pc.bgCyan(pc.black(' Create Mobile App ')));
 
   const answers = await collectAnswers();
-  const { projectName, routing, store, addClaude, projectPath } = answers;
+  const { projectName, routing, store, styling, addClaude, projectPath } = answers;
 
   const resolvedPath = resolveProjectPath(projectPath, projectName);
 
@@ -22,6 +22,7 @@ async function main() {
     `  Назва:    ${pc.cyan(projectName)}\n` +
     `  Роутінг:  ${ROUTING_LABEL[routing]}\n` +
     `  Стор:     ${STORE_LABEL[store]}\n` +
+    `  Стилі:    ${STYLING_LABEL[styling]}\n` +
     `  Claude:   ${addClaude ? pc.green('так') : pc.dim('ні')}\n` +
     `  Шлях:     ${resolvedPath}`
   );
@@ -31,7 +32,7 @@ async function main() {
     const s = spinner();
 
     s.start('Копіювання шаблону...');
-    const destDir = await createProject({ routing, store, projectName, projectPath });
+    const destDir = await createProject({ routing, store, styling, projectName, projectPath, addClaude });
     s.stop(pc.green('Шаблон скопійовано'));
 
     if (!addClaude) {
