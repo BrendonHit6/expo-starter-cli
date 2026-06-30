@@ -46,12 +46,12 @@ function copySkills(destDir) {
   }
 }
 
-function runInstall(destDir) {
+function runInstall(destDir, pkgManager = 'npm') {
   return new Promise((resolve, reject) => {
-    const proc = spawn('npm', ['install'], { cwd: destDir, stdio: 'inherit' });
+    const proc = spawn(pkgManager, ['install'], { cwd: destDir, stdio: 'inherit' });
     proc.on('close', code => {
       if (code === 0) resolve();
-      else reject(new Error(`npm install завершився з кодом ${code}`));
+      else reject(new Error(`${pkgManager} install завершився з кодом ${code}`));
     });
     proc.on('error', reject);
   });
@@ -70,4 +70,13 @@ async function createProject({ routing, store, styling, projectName, projectPath
   return destDir;
 }
 
-module.exports = { resolveProjectPath, createProject, runInstall };
+function isDirNonEmpty(dirPath) {
+  try {
+    return fs.readdirSync(dirPath).length > 0;
+  } catch (e) {
+    if (e.code === 'ENOENT') return false;
+    throw e;
+  }
+}
+
+module.exports = { resolveProjectPath, resolveTemplateName, isDirNonEmpty, createProject, runInstall };

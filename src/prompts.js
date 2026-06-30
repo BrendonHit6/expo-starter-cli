@@ -1,5 +1,17 @@
+const { execSync } = require('child_process');
 const { text, select, confirm, cancel, isCancel } = require('@clack/prompts');
-const { ROUTING, STORE, STYLING } = require('./constants');
+const { ROUTING, STORE, STYLING, PKG_MANAGER } = require('./constants');
+
+function detectAvailableManagers() {
+  return [PKG_MANAGER.NPM, PKG_MANAGER.YARN, PKG_MANAGER.BUN].filter(m => {
+    try {
+      execSync(`${m} --version`, { stdio: 'ignore' });
+      return true;
+    } catch {
+      return false;
+    }
+  });
+}
 
 function handleCancel(value) {
   if (isCancel(value)) {
@@ -91,6 +103,23 @@ async function askAddClaude() {
   return value;
 }
 
+async function askPackageManager(available) {
+  if (available.length === 1) return available[0];
+
+  const hints = {
+    [PKG_MANAGER.NPM]: 'стандартний, завжди доступний',
+    [PKG_MANAGER.YARN]: 'швидший за npm, зручний lockfile',
+    [PKG_MANAGER.BUN]: 'найшвидший, вбудований runtime',
+  };
+
+  const value = await select({
+    message: 'Пакетний менеджер:',
+    options: available.map(m => ({ value: m, label: m, hint: hints[m] })),
+  });
+  handleCancel(value);
+  return value;
+}
+
 async function askProjectPath() {
   const value = await text({
     message: 'Шлях для створення проекту:',
@@ -102,15 +131,23 @@ async function askProjectPath() {
   return value.trim();
 }
 
-async function collectAnswers() {
-  const projectName = await askProjectName();
+async function collectAnswers({ preset, projectNameArg } = {}) {
+  const available = detectAvailableManagers();
+  const projectName = projectNameArg || await askProjectName();
+  if (!projectNameArg) handleCancel(projectName);
+
+  if (preset) {
+    return { projectName, ...preset, addClaude: true, packageManager: available[0], projectPath: '' };
+  }
+
   const routing = await askRouting();
   const store = await askStore();
   const styling = await askStyling();
   const addClaude = await askAddClaude();
+  const packageManager = await askPackageManager(available);
   const projectPath = await askProjectPath();
 
-  return { projectName, routing, store, styling, addClaude, projectPath };
+  return { projectName, routing, store, styling, addClaude, packageManager, projectPath };
 }
 
 module.exports = { collectAnswers };
